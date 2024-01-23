@@ -1,5 +1,5 @@
 const express = require("express");
-const { User } = require("../db");
+const { User, Account } = require("../db");
 const zod = require("zod");
 const { JWT_SCECRET_KEY } = require("../config");
 const router = express.Router();
@@ -28,30 +28,32 @@ const loginBody = zod.object({
 
 router.post("/login", async (req, res) => {
   try {
-    // const { success } = loginBody.safeParse(req.body);
-    // if (!success) {
-    //   return res.status(411).json({
-    //     message: "Incorrect inputs",
-    //   });
-    // }
-    // const user = await User.findOne({ username: req.body.username });
-    // const userId = user.id;
-    // const saltRounds = 10;
-    // const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-    // bcrypt.compare(user.password, hashedPassword, (err, data) => {
-    //   if (err) {
-    //     return res.status(400).json({ message: "Something went wrong" });
-    //   }
-    //   console.log(data);
-    //   if (data) {
-    //     const token = jwt.sign({ userId }, JWT_SCECRET_KEY);
-    //     return res.status(200).json({ message: "Login Sucessfull", token });
-    //   } else {
-    //     return res
-    //       .status(400)
-    //       .json({ message: "Password doesn't match", user });
-    //   }
-    // });
+    const { success } = loginBody.safeParse(req.body);
+    if (!success) {
+      return res.status(411).json({
+        message: "Incorrect inputs",
+      });
+    }
+    const user = await User.findOne({ username: req.body.username });
+    if (!user) {
+      return res.status(403).json({ message: "Wrong  or User not found" });
+    }
+    const userId = user.id;
+    const isPasswordCorrect = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
+
+    if (!isPasswordCorrect) {
+      return res.status(403).json({
+        message: "Wrong credentials",
+        hashedPassword,
+        password: user.password,
+      });
+    }
+
+    const token = jwt.sign({ userId }, JWT_SCECRET_KEY);
+    res.status(200).json({ message: "Login Sucessfully", token });
   } catch (error) {
     return res.status(500).json({ message: "Something went wrong" });
   }
@@ -86,11 +88,17 @@ router.post("/signup", async (req, res) => {
     });
 
     const userId = user._id;
+    await Account.create({
+      userId: userId,
+      balance: 1 + Math.random() * 10000,
+    });
+
     const token = jwt.sign({ userId }, JWT_SCECRET_KEY);
 
     res.status(200).json({ message: "User Created", token });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
@@ -122,7 +130,7 @@ router.patch("/", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/bulk", authMiddleware,  async (req, res) => {
+router.get("/bulk", authMiddleware, async (req, res) => {
   try {
     const filter = req.query.filter || "";
     const users = await User.find({
