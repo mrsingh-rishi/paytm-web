@@ -122,4 +122,13 @@ router.patch("/", authMiddleware, async (req, res) => {
   }
 });
 
+router.get("/bulk", authMiddleware, async (req, res) => {
+  const { filter } = req.query;
+  const regex = new RegExp(filter, "i");
+  const users = await User.find({
+    $or: [{ firstName: { $regex: regex } }, { lastName: { $regex: regex } }],
+  });
+  res.json(users);
+});
+
 module.exports = router;
