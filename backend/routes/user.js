@@ -122,13 +122,24 @@ router.patch("/", authMiddleware, async (req, res) => {
   }
 });
 
-router.get("/bulk", authMiddleware, async (req, res) => {
-  const { filter } = req.query;
-  const regex = new RegExp(filter, "i");
-  const users = await User.find({
-    $or: [{ firstName: { $regex: regex } }, { lastName: { $regex: regex } }],
-  });
-  res.json(users);
+router.get("/bulk", authMiddleware,  async (req, res) => {
+  try {
+    const filter = req.query.filter || "";
+    const users = await User.find({
+      $or: [
+        { firstName: { $regex: filter } },
+        { lastName: { $regex: filter } },
+      ],
+    });
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: "Somthing wen wrong" });
+  }
 });
 
 module.exports = router;
