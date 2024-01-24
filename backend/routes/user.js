@@ -1,11 +1,17 @@
+// Imports
+
 const express = require("express");
 const { User, Account } = require("../db");
 const zod = require("zod");
 const { JWT_SCECRET_KEY } = require("../config");
-const router = express.Router();
 const jwt = require("jsonwebtoken");
 const { authMiddleware } = require("../middleware");
 const bcrypt = require("bcrypt");
+
+// Router
+
+const router = express.Router();
+// Zod Schemas
 
 const singupZod = zod.object({
   username: zod.string().email(),
@@ -24,6 +30,7 @@ const loginBody = zod.object({
   username: zod.string().email(),
   password: zod.string(),
 });
+
 // Login
 
 router.post("/login", async (req, res) => {
