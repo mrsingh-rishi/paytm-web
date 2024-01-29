@@ -3,8 +3,12 @@
 const express = require("express");
 
 const { authMiddleware } = require("../middleware");
-const { updateUser, getUserByFilter, login } = require("../controllers/user");
-const { sign } = require("jsonwebtoken");
+const {
+  updateUser,
+  getUserByFilter,
+  login,
+  singup,
+} = require("../controllers/user");
 
 // Router
 const router = express.Router();
@@ -15,7 +19,7 @@ router.post("/login", login);
 
 // Singup or Create User
 
-router.post("/signup", sign);
+router.post("/signup", singup);
 
 // Update User
 
