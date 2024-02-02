@@ -144,9 +144,34 @@ async function getUserByFilter(req, res) {
   }
 }
 
+async function getUserData(req, res) {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json("User not Found");
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json("Something went wrong");
+  }
+}
+
+async function getAllUsers(req, res) {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
 module.exports = {
   updateUser,
   login,
   singup,
-  getUserByFilter
+  getUserByFilter,
+  getUserData,
+  getAllUsers,
 };

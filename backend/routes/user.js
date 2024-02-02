@@ -8,6 +8,8 @@ const {
   getUserByFilter,
   login,
   singup,
+  getUserData,
+  getAllUsers,
 } = require("../controllers/user");
 
 // Router
@@ -28,5 +30,13 @@ router.patch("/", authMiddleware, updateUser);
 // Get user buy filter
 
 router.get("/bulk", authMiddleware, getUserByFilter);
+
+// Get user data
+
+router.get("/", authMiddleware, getUserData);
+
+// Get all users
+
+router.get("/all", authMiddleware, getAllUsers);
 
 module.exports = router;
